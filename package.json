@@ -1,0 +1,19 @@
+{
+  "name": "marketing-agency-automation",
+  "version": "1.0.0",
+  "description": "AI Marketing Agency - YouTube channel automation system",
+  "scripts": {
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm start",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "build:client": "cd client && npm run build",
+    "build:server": "cd server && npm run build",
+    "start": "cd server && npm start"
+  },
+  "keywords": ["marketing", "automation", "youtube", "n8n"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
