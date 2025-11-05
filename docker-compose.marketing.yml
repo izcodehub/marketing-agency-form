@@ -1,0 +1,40 @@
+# Add these services to your existing /root/docker-compose.yml file
+# This file shows only the NEW services to add
+
+services:
+  marketing-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    restart: always
+    env_file:
+      - ./server/.env.production
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.marketing-api.rule=Host(`api.officepark.online`)"
+      - "traefik.http.routers.marketing-api.entrypoints=websecure"
+      - "traefik.http.routers.marketing-api.tls.certresolver=mytlschallenge"
+      - "traefik.http.services.marketing-api.loadbalancer.server.port=3001"
+    networks:
+      - default
+    depends_on:
+      - n8n
+
+  marketing-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.marketing-web.rule=Host(`marketing.officepark.online`)"
+      - "traefik.http.routers.marketing-web.entrypoints=websecure"
+      - "traefik.http.routers.marketing-web.tls.certresolver=mytlschallenge"
+      - "traefik.http.services.marketing-web.loadbalancer.server.port=80"
+    networks:
+      - default
+
+# Networks will be shared with your existing services
+networks:
+  default:
+    driver: bridge
