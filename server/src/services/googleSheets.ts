@@ -10,11 +10,17 @@ export interface ClientData {
   posting_frequency: string;
   email: string;
   phone: string;
-  youtube_channel_id: string;
-  youtube_channel_title: string;
-  youtube_channel_url: string;
+  youtube_channel_id?: string;
+  youtube_channel_title?: string;
+  youtube_channel_url?: string;
+  channel_name?: string;
+  description_generated?: string;
+  keywords?: string;
+  banner_url?: string;
+  trailer_url?: string;
   status: string;
   created_at: string;
+  setup_completed_at?: string;
 }
 
 export class GoogleSheetsService {
@@ -132,6 +138,104 @@ export class GoogleSheetsService {
       console.log(`✅ Updated client ${clientId} status to ${status}`);
     } catch (error) {
       console.error('❌ Error updating client status:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all clients with parsed data
+   */
+  async getAllClients(): Promise<ClientData[]> {
+    try {
+      const rows = await this.getClients();
+
+      return rows.map((row) => ({
+        id: row[0] || '',
+        client_name: row[1] || '',
+        industry: row[2] || '',
+        description_input: row[3] || '',
+        target_audience: row[4] || '',
+        posting_frequency: row[5] || '',
+        email: row[6] || '',
+        phone: row[7] || '',
+        youtube_channel_id: row[8] || '',
+        youtube_channel_title: row[9] || '',
+        youtube_channel_url: row[10] || '',
+        description_generated: row[11] || '',
+        keywords: row[12] || '',
+        banner_url: row[13] || '',
+        trailer_url: row[14] || '',
+        channel_name: row[15] || '',
+        status: row[16] || 'pending',
+        created_at: row[17] || new Date().toISOString(),
+        setup_completed_at: row[18] || '',
+      }));
+    } catch (error) {
+      console.error('❌ Error getting all clients:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get a single client by ID
+   */
+  async getClientById(clientId: string): Promise<ClientData | null> {
+    try {
+      const clients = await this.getAllClients();
+      return clients.find((c) => c.id === clientId) || null;
+    } catch (error) {
+      console.error('❌ Error getting client by ID:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update client with partial data
+   */
+  async updateClient(clientId: string, updates: Partial<ClientData>): Promise<void> {
+    try {
+      const clients = await this.getClients();
+      const rowIndex = clients.findIndex((row) => row[0] === clientId);
+
+      if (rowIndex === -1) {
+        throw new Error(`Client ${clientId} not found`);
+      }
+
+      const rowNumber = rowIndex + 2; // +2 for header row and 0-index
+
+      // Map updates to column letters
+      const columnMap: { [key: string]: string } = {
+        youtube_channel_id: 'I',
+        youtube_channel_title: 'J',
+        youtube_channel_url: 'K',
+        description_generated: 'L',
+        keywords: 'M',
+        banner_url: 'N',
+        trailer_url: 'O',
+        channel_name: 'P',
+        status: 'Q',
+        setup_completed_at: 'S',
+      };
+
+      // Update each field
+      const updatePromises = Object.entries(updates).map(([key, value]) => {
+        const column = columnMap[key];
+        if (!column) return Promise.resolve();
+
+        return this.sheets.spreadsheets.values.update({
+          spreadsheetId: this.spreadsheetId,
+          range: `Clients!${column}${rowNumber}`,
+          valueInputOption: 'USER_ENTERED',
+          requestBody: {
+            values: [[value]],
+          },
+        });
+      });
+
+      await Promise.all(updatePromises);
+      console.log(`✅ Updated client ${clientId}`);
+    } catch (error) {
+      console.error('❌ Error updating client:', error);
       throw error;
     }
   }

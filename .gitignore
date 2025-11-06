@@ -12,6 +12,10 @@ server/.env
 
 # Note: .env.example and .env.production files are templates and ARE committed
 
+# Personal session notes (not for public repo)
+SESSION_RESUME.md
+TOMORROW.md
+
 # Build outputs
 dist/
 build/
@@ -41,6 +45,8 @@ credentials.json
 service-account.json
 *.pem
 *.key
+tokens.json
+server/tokens.json
 
 # Testing
 coverage/
